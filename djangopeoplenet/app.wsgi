@@ -5,8 +5,7 @@ sys.stdout = sys.stderr
 
 paths = (
     '/home/simon/sites/djangopeople.net',
-    '/home/simon/sites/djangopeople.net/djangopeoplenet',
-    '/home/simon/sites/djangopeople.net/djangopeoplenet/djangopeople/lib',
+    '/home/simon/sites/djangopeople.net/lib',
 )
 for path in paths:
     if not path in sys.path:
