@@ -127,7 +127,7 @@ class SignupForm(forms.Form):
         ), required=False #, widget = forms.RadioSelect, initial=''
     )
     
-    #skilltags = TagField(required=False)
+    skilltags = TagField(required=False)
     
     # Upload a photo is a separate page, because if validation fails we 
     # don't want to tell them to upload it all over again
