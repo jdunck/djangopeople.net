@@ -122,13 +122,12 @@ class DjangoPerson(models.Model):
             return self.machinetags.filter(namespace = 'im', predicate='django')[0].value
         except IndexError:
             return '<none>'
-     
-    def get_nearest(self, num=5):
-        "Returns the nearest X people"
-        # TODO: use this shonky SQL query instead of the other shonky method
+
+    def _get_distance_sql(self):
         # From http://code.google.com/apis/maps/articles/phpsqlsearch_v3.html
-        sql = """
-            SELECT id, (
+        # To search by kilometers instead of miles, replace 3959 with 6371.
+        return """
+            (
                 3959 * acos(
                     cos(radians(%(latitude)s)) * 
                     cos(radians(latitude)) * 
@@ -138,30 +137,39 @@ class DjangoPerson(models.Model):
                     + sin(radians(%(latitude)s)) * 
                     sin(radians(latitude))
                 )
-            ) AS distance
-            FROM djangopeople_djangoperson
-            HAVING distance < 100 ORDER BY distance LIMIT 0, %(num)s
-        """
-        # To search by kilometers instead of miles, replace 3959 with 6371.
+            )
+        """ % {'latitude': self.latitude, 'longitude':self.longitude}
         
-        people = list(self.country.djangoperson_set.select_related().exclude(pk=self.id))
-        if len(people) <= num:
-            # Not enough in country; use people from the same continent instead
-            people = list(DjangoPerson.objects.filter(
-                country__continent = self.country.continent,
-            ).exclude(pk=self.id).select_related())
+    def get_nearest_num(self, num=5):
+        "Returns the nearest X people"
+        sql = self._get_distance_sql()
 
-        # Sort and annotate people by distance
-        for person in people:
-            person.distance_in_miles = distance.VincentyDistance(
-                (self.latitude, self.longitude),
-                (person.latitude, person.longitude)
-            ).miles
+        nearest = (DjangoPerson.objects.exclude(pk=self.id).extra(select = {'distance_in_miles':sql},
+                                               order_by = ('distance_in_miles',)).select_related()[:num])
+        return nearest
         
-        # Return the nearest X
-        people.sort(key=lambda x: x.distance_in_miles)
-        return people[:num]
-    
+    def get_within_distance(self, miles=20):
+        #BAH!  mysql doesn't allow column aliases to be used in WHERE clauses (must use HAVING instead).
+        #that means we can't refer to distance_in_miles using QS.extra as we did in get_nearest_num.
+        from django.db import connection
+        cursor = connection.cursor()
+        sql = """
+            select id, %s as distance
+            FROM djangopeople_djangoperson
+            where NOT (id = %%s )
+            HAVING distance < %%s 
+            ORDER BY distance
+            LIMIT 1000
+        """ % (self._get_distance_sql())
+        params = (self.id, miles)
+        cursor.execute(sql, params)
+        rows = cursor.fetchall()
+        ids = [r[0] for r in rows]
+        within = DjangoPerson.objects.in_bulk(ids)
+        for id_, distance_in_miles in rows:
+            within[id_].distance_in_miles = distance_in_miles
+        return within.values()
+
     def location_description_html(self):
         region = ''
         if self.region:
@@ -267,7 +275,12 @@ class PendingMembership(models.Model):
             return u'%s is invited to join %s' % (self.user, self.group)
         else:
             return u'%s has requested to join %s' % (self.user, self.group)
-
+    def approve(self):
+        membership = Membership.objects.get_or_create(user=self.user,group=self.group)
+        self.delete()
+        return membership
+    def deny(self):
+        self.delete()
 
 #class ClusteredPoint(models.Model):
 #    

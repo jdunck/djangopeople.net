@@ -16,7 +16,7 @@ google.load('maps', '2');
 
 var nearby_people = [
     // latitude, longitude, name, username, location description, flag, isocode
-    {% for p in person.get_nearest %}
+    {% for p in person.get_nearest_num %}
     [{{ p.latitude }}, {{ p.longitude }}, "{{ p|escapejs }}", "{{ p.user.username|escapejs }}", "{{ p.location_description|escapejs }}", "{% if p.photo %}{% thumbnail p.photo 40x40 crop %}{% else %}/static/img/person_small_blank.png{% endif %}", "{{ p.country.iso_code|lower }}"]{% if not forloop.last %},{% endif %}
     {% endfor %}
 ];
@@ -122,7 +122,7 @@ div.bio a.edit {
         
         </div>
         <div class="secondary">
-            {% with person.get_nearest as people %}
+            {% with person.get_nearest_num as people %}
             {% if people %}
             <h2>People near {{ person.user.first_name }}</h2>
             

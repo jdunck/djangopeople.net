@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title%}Groups for {{ person }} |{% endblock %}
+
+{% block nav_li_class_profile %}{% if is_owner %} class="current"{% endif %}{% endblock %}
+
+{% block js %}{% load thumbnail %}
+{% if privacy.hide_from_search %}<meta name="ROBOTS" content="NOINDEX, FOLLOW">{% endif %}
+{% endblock %}
+
+{% block header %}
+   {% if person.photo %}<img src="{% thumbnail person.photo 83x83 crop %}" alt="{{ person }}" class="main photo">{% endif %}
+   <h1 class="fn n">
+      <span class="given-name">{{ person.user.first_name }}</span>
+      <span class="family-name">{{ person.user.last_name }}</span>
+   </h1>
+{% endblock %}
+
+{% block content %}
+    <div class="primary">
+       {% if current_groups or near_groups %}
+         {% if current_groups %}
+            <h2> {% if is_owner %}You are {% else %}{{ person }} is {% endif %} a member of: </h2>
+            <ul>
+               {% for group in current_groups %}
+                  <li><a href="/groups/{{ group.slug }}/">{{ group }}</a></li>
+               {% endfor %}
+            </ul>
+         {% else %}
+            {{ person }} is not a member of any groups!
+         {% endif %}
+         {% if near_groups %}
+            <h2> Groups near {% if is_owner %}you{% else %}{{ person }}{% endif %}: </h2>
+            <ul>
+               {% for group in near_groups %}
+                  <li><a href="/groups/{{ group.slug }}/">{{ group }}</a> {% if is_owner %}join?{% endif %}</li>
+               {% endfor %}
+            </ul>
+         {% endif %}
+       {% endif %}
+   </div>
+{% endblock content %}

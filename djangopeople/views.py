@@ -58,8 +58,12 @@ def groups(request):
     })
 
 def group(request, slug):
+    group = get_object_or_404(Group, slug = slug)
+    is_admin = bool(group.memberships.filter(user = request.user, is_admin = True))
+        
     return render(request, 'group.html', {
-        'group': get_object_or_404(Group, slug = slug)
+        'group': group,
+        'is_admin': is_admin,
     })
 
 def group_create(request):
@@ -417,6 +421,22 @@ def profile(request, username):
         'services': services,
         'privacy': privacy,
         'show_finding': show_finding,
+    })
+
+def profile_groups(request, username):
+    #your groups, create group, groups near you
+    #group moderation, group contact
+
+    person = get_object_or_404(DjangoPerson, user__username = username)
+    current_groups = Group.objects.filter(memberships__user=person)
+    near_groups = Group.objects.filter(memberships__user__in=person.get_within_distance()).exclude(pk__in=current_groups)
+
+    return render(request, 'profile_groups.html', {
+        'person': person,
+        'api_key': settings.GOOGLE_MAPS_API_KEY,
+        'is_owner': request.user.username == username,
+        'current_groups': current_groups,
+        'near_groups': near_groups,
     })
 
 @must_be_owner

@@ -68,6 +68,7 @@ urlpatterns = patterns('',
     (r'^([a-z0-9]{3,})/finding/$', views.edit_finding),
     (r'^([a-z0-9]{3,})/upload/$', views.upload_profile_photo),
     (r'^([a-z0-9]{3,})/upload/done/$', views.upload_done),
+    (r'^([a-z0-9]{3,})/groups/$', views.profile_groups),
     
 #    (r'^clusters/(\-?\d+\.?\d*)/(\-?\d+\.?\d*)/(\-?\d+\.?\d*)/(\-?\d+\.?\d*)/(\d+)/$', clustering.as_json),
 )

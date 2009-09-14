@@ -29,3 +29,45 @@ cleanup imports
 404s:
 	je.gif
 	aq.gif
+
+--------
+
+
+"""
+	http://spw.etherpad.com/3
+Groups:
+- name
+- description
+- optional website
+- members (some are group admins)
+- open-or-closed
+
+Group invitations (or membership requests)
+- "invite you to be member of X"
+	group approval queue
+
+group admin addition/removal
+
+groups:
+	most popular
+	near (if logged in)
+	new
+	
+
+
+profile group view:
+	your groups, create group, groups near you
+	group moderation, group contact
+factor out commonality between profile.html and profile_groups.html
+when viewing someone else's groups, and you're an admin of a group, invite them.
+
+- write deployment scripts
+- deploy from github
+- add heatmaps (including open sourcing the code)
+- add user groups
+- add companies
+- clustering merged?
+- contact form (or change to opt-in to private contact info)
+   xxx done xxx  upgrade to Django 1.1
+"""
+
